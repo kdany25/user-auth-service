@@ -6,18 +6,18 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
-import io.jsonwebtoken.io.IOException;
-
-@WebFilter(asyncSupported = true, urlPatterns = { "/*" })
+@WebFilter(asyncSupported = true, urlPatterns = {"/*"})
 public class Cors implements javax.servlet.Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException, java.io.IOException {
-        ((HttpServletResponse) response).addHeader("Access-Control-Allow-Origin", "*");
-        ((HttpServletResponse) response).addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, HEAD, PUT, POST");
-        ((HttpServletResponse) response).addHeader("Access-Control-Allow-Headers",  "X-Requested-With,Origin,Content-Type, Accept, Authorization");
-        ((HttpServletResponse) response).addHeader("Access-Control-Max-Age", "86400");
-        ((HttpServletResponse) response).addHeader("Access-Control-Allow-Credentials", "true");
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        httpResponse.setHeader("Access-Control-Allow-Origin", "*");
+        httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+        httpResponse.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        httpResponse.setHeader("Access-Control-Max-Age", "86400");
+        httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
 
         chain.doFilter(request, response);
     }
