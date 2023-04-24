@@ -14,6 +14,7 @@ import com.google.gson.annotations.Expose;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.mindrot.jbcrypt.BCrypt;
 
 @Getter
 @Setter
@@ -41,21 +42,12 @@ public abstract class User {
     public abstract void createUser(User user);
 
     public void encryptPassword() {
-        StringBuilder encryptedPasswordBuilder = new StringBuilder();
-        for (int i = this.password.length() - 1; i >= 0; i--) {
-            encryptedPasswordBuilder.append(this.password.charAt(i));
-        }
-        String encryptedPassword = "**" + encryptedPasswordBuilder.toString() + "</>*" + this.role + "**";
-        this.password = encryptedPassword;
+        String hashedPassword = BCrypt.hashpw(this.password, BCrypt.gensalt());
+        this.password = hashedPassword;
     }
 
-    public String decryptPassword() {
-        String encryptedPassword = this.password.substring(2, this.password.length() - 2).split("</>*")[0];
-        StringBuilder decryptedPasswordBuilder = new StringBuilder();
-        for (int i = encryptedPassword.length() - 1; i >= 0; i--) {
-            decryptedPasswordBuilder.append(encryptedPassword.charAt(i));
-        }
-        return decryptedPasswordBuilder.toString();
+    public boolean checkPassword(String inputPassword) {
+        return BCrypt.checkpw(inputPassword, this.password);
     }
 
     public ApiResponse<String> login(String usernameOrEmailOrPhone, String password) throws Exception {
@@ -76,7 +68,7 @@ public abstract class User {
             throw new AuthenticationException(errorMessage);
         }
 
-        if (!password.equals(user.decryptPassword())) {
+        if (!user.checkPassword(password)) {
             throw new AuthenticationException(errorMessage);
         }
 
