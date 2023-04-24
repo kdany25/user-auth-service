@@ -27,11 +27,12 @@ public abstract class User {
     private String lastName;
     @NonNull
     private String userName;
-    @Expose(serialize = false)
-    private String password;
-    private Gender gender;
     @NonNull
     private String phone;
+    @Expose(serialize = false)
+    private String password;
+    @NonNull
+    private Gender gender;
     private Integer age;
     private UserRole role;
 
@@ -57,14 +58,53 @@ public abstract class User {
         return decryptedPasswordBuilder.toString();
     }
 
-    public ApiResponse<String> login(String email, String password) throws Exception {
-        User user = DataStore.findUser(email);
+    public ApiResponse<String> login(String usernameOrEmailOrPhone, String password) throws Exception {
+        User user = null;
+        String errorMessage = "Invalid credentials";
+        if (isUsername(usernameOrEmailOrPhone)) {
+            user = DataStore.getUserByUsername(usernameOrEmailOrPhone);
+            errorMessage = "Invalid username or password";
+        } else if (isEmail(usernameOrEmailOrPhone)) {
+            user = DataStore.getUserByEmail(usernameOrEmailOrPhone);
+            errorMessage = "Invalid email or password";
+        } else if (isPhone(usernameOrEmailOrPhone)) {
+            user = DataStore.getUserByPhone(usernameOrEmailOrPhone);
+            errorMessage = "Invalid phone number or password";
+        }
+
         if (user == null) {
-            throw new AuthenticationException("Invalid credentials");
+            throw new AuthenticationException(errorMessage);
         }
+
         if (!password.equals(user.decryptPassword())) {
-            throw new AuthenticationException("Invalid credentials");
+            throw new AuthenticationException(errorMessage);
         }
+
         return new ApiResponse<>("You have logged in successfully", GenerateJwt.generateJwt(user));
     }
+
+    private boolean isUsername(String value) {
+        if (value.matches("^[a-zA-Z]\\w*$")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isEmail(String value) {
+        if (value.matches("^\\S+@\\S+\\.\\S+$")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isPhone(String value) {
+        if (value.matches("^\\d{10}$")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
