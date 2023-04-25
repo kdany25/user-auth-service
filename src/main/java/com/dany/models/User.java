@@ -14,10 +14,13 @@ import com.google.gson.annotations.Expose;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
+
 import org.mindrot.jbcrypt.BCrypt;
 
 @Getter
 @Setter
+@ToString
 public abstract class User {
     private final String id = UUID.randomUUID().toString();
     @NonNull
